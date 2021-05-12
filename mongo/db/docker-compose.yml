@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - 127.0.0.1:27017:27017
+    environment:
+      - MONGO_INITDB_DATABASE=admin
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
+    volumes:
+      - ~/db/mongo/data:/data/db
