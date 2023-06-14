@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  web:
+    image: python:3.9-alpine
+    command: sh -c "apk add --no-cache python3 git && git clone <URL_DEL_PROYECTO> /app && cd /app && python3 -m pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000 --workers=2 >> /logs/api/$(date +\%m-\%d-\%y_\%I-\%M-\%S\%p).log 2>&1 2>&1"
+    container_name: fastapi_web
+    depends_on:
+      - traefik
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./logs:/logs
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi_web.rule=Host(`localhost`)"
+      - "traefik.http.routers.fastapi_web.entrypoints=web"
+      - "traefik.http.services.fastapi_web.loadbalancer.server.port=8000"
+  
+  traefik:
+    image: traefik:v2.4
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+      #docker-compose scale app=5
